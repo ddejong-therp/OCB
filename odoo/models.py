@@ -4102,8 +4102,8 @@ class BaseModel(MetaModel('DummyModel', (object,), {'_register': False})):
                     key = (field.model_name, field.comodel_name, order_field)
                     if key not in seen:
                         seen.add(key)
-                        els, fields = self._generate_m2o_order_by(alias, order_field, query, do_reverse, seen)
-                        order_by_elements += els
+                        elements, fields = self._generate_m2o_order_by(alias, order_field, query, do_reverse, seen)
+                        order_by_elements += elements
                         order_by_fields += fields
                 elif field.store and field.column_type:
                     qualifield_name = self._inherits_join_calc(alias, order_field, query, implicit=False, outer=True)
