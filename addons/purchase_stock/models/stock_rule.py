@@ -124,8 +124,11 @@ class StockRule(models.Model):
             for procurement in procurements:
                 po_lines = po_lines_by_product.get(procurement.product_id.id, self.env['purchase.order.line'])
                 po_line = po_lines._find_candidate(*procurement)
+                so_account_analytic = procurement.values['move_dest_ids'][0] \
+                    .sale_line_id.order_id.account_analytic_id \
+                        if procurement.values['move_dest_ids'] else None
 
-                if po_line:
+                if po_line and po_line.account_analytic_id == so_account_analytic:
                     # If the procurement can be merge in an existing line. Directly
                     # write the new values on it.
                     vals = self._update_purchase_order_line(procurement.product_id,
@@ -144,6 +147,9 @@ class StockRule(models.Model):
                         procurement.product_id, procurement.product_qty,
                         procurement.product_uom, procurement.company_id,
                         procurement.values, po))
+                    if so_account_analytic:
+                        po_line_values[len(po_line_values)-1] \
+                            ['account_analytic_id'] = so_account_analytic.id
                     # Check if we need to advance the order date for the new line
                     order_date_planned = procurement.values['date_planned'] - relativedelta(
                         days=procurement.values['supplier'].delay)
