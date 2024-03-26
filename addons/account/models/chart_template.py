@@ -101,7 +101,7 @@ def update_taxes_from_templates(cr, chart_template_xmlid):
         }
         """
         env['ir.model.data'].flush_model()
-        template_xmlids = [xmlid.split('.', 1)[1] for xmlid in templates.get_external_id().values()]
+        template_xmlids = [xmlid.split('.', 1)[1] for xmlid in templates.get_external_id().values() if xmlid]
         res = defaultdict(dict)
         if not template_xmlids:
             return res
@@ -920,9 +920,11 @@ class AccountChartTemplate(models.Model):
         template_xmlids = template_model.browse(template_ids).get_external_id()
         data_list = []
         for template, vals in template_vals:
-            module, name = template_xmlids[template.id].split('.', 1)
-            xml_id = "%s.%s_%s" % (module, company.id, name)
-            data_list.append(dict(xml_id=xml_id, values=vals, noupdate=True))
+            template_xmlid = template_xmlids[template.id]
+            if template_xmlid:
+                module, name = template_xmlid.split('.', 1)
+                xml_id = "%s.%s_%s" % (module, company.id, name)
+                data_list.append(dict(xml_id=xml_id, values=vals, noupdate=True))
         return self.env[model]._load_records(data_list)
 
     @api.model
